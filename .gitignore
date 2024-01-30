@@ -4,3 +4,4 @@ web/themes/contrib
 web/libraries
 web/profiles/contrib
 web/core
+*.sql.gz
