@@ -9,6 +9,8 @@
       "pathMappings": {
         "/app": "${workspaceFolder}"
       },
+      "preLaunchTask": "Lando: Enable Xdebug",
+      "postDebugTask": "Lando: Disable Xdebug",
       "xdebugSettings": {
         "show_hidden": 1,
         // Increase the depth of variable inspection in the Debug Console.
