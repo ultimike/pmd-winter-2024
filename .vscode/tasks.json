@@ -4,6 +4,26 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "DDEV: Enable Xdebug",
+      "type": "shell",
+      "command": "ddev xdebug on",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
+      "label": "DDEV: Disable Xdebug",
+      "type": "shell",
+      "command": "ddev xdebug off",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "close": true
+      }
+    },
+    {
       "label": "Lando: Enable Xdebug",
       "type": "shell",
       "command": "lando xdebug-on"

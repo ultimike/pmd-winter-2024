@@ -15,9 +15,9 @@
   <exclude-pattern>*/node_modules/*</exclude-pattern>
   <exclude-pattern>*rules_export.txt</exclude-pattern>
   <exclude-pattern>*/features/*</exclude-pattern>
-  
+
   <arg name="extensions" value="php,module,inc,install,test,profile,theme,css,info,txt,md,yml"/>
- 
+
   <!-- For colored cli output -->
   <arg name="colors"/>
   <!-- To show rule names. Equivalent to "phpcs -s" -->
