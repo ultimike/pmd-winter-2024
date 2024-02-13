@@ -41,7 +41,7 @@ final class AddYmlRepoTest extends BrowserTestBase {
   public function testSomething(): void {
     $admin_user = $this->drupalCreateUser([
       'access administration pages',
-      'administer site configuration',
+      //'administer site configuration',
     ]);
 
     $this->drupalLogin($admin_user);
