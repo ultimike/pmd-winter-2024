@@ -15,6 +15,8 @@ trait RepositoryContentTypeTrait {
 
   /**
    * Create a Repository content type.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function createRepositoryContentType(): void {
     NodeType::create(['type' => 'repository', 'name' => 'Repository'])->save();
@@ -31,6 +33,76 @@ trait RepositoryContentTypeTrait {
       'entity_type' => 'node',
       'bundle' => 'repository',
       'label' => 'Description',
+    ])->save();
+
+    // Create Hash field.
+    FieldStorageConfig::create([
+      'field_name' => 'field_hash',
+      'type' => 'string',
+      'entity_type' => 'node',
+      'cardinality' => 1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_hash',
+      'entity_type' => 'node',
+      'bundle' => 'repository',
+      'label' => 'Hash',
+    ])->save();
+
+    // Create Machine name field.
+    FieldStorageConfig::create([
+      'field_name' => 'field_machine_name',
+      'type' => 'string',
+      'entity_type' => 'node',
+      'cardinality' => 1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_machine_name',
+      'entity_type' => 'node',
+      'bundle' => 'repository',
+      'label' => 'Machine name',
+    ])->save();
+
+    // Create Number of open issues field.
+    FieldStorageConfig::create([
+      'field_name' => 'field_number_of_issues',
+      'type' => 'integer',
+      'entity_type' => 'node',
+      'cardinality' => 1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_number_of_issues',
+      'entity_type' => 'node',
+      'bundle' => 'repository',
+      'label' => 'Number of open issues',
+    ])->save();
+
+    // Create Source field.
+    FieldStorageConfig::create([
+      'field_name' => 'field_source',
+      'type' => 'string',
+      'entity_type' => 'node',
+      'cardinality' => 1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_source',
+      'entity_type' => 'node',
+      'bundle' => 'repository',
+      'label' => 'Source',
+    ])->save();
+
+    // Create Link field.
+    FieldStorageConfig::create([
+      'field_name' => 'field_url',
+      'type' => 'link',
+      'entity_type' => 'node',
+      'cardinality' => 1,
+    ])->save();
+    FieldConfig::create([
+      'field_name' => 'field_url',
+      'entity_type' => 'node',
+      'bundle' => 'repository',
+      'label' => 'Link',
     ])->save();
   }
 
