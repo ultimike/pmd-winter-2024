@@ -4,10 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\Tests\drupaleasy_repositories\Functional;
 
-//use Drupal\field\Entity\FieldConfig;
-//use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Tests\BrowserTestBase;
-//use Drupal\Tests\drupaleasy_repositories\Traits\RepositoryContentTypeTrait;
 use Drupal\user\Entity\User;
 
 /**
@@ -16,7 +13,6 @@ use Drupal\user\Entity\User;
  * @group drupaleasy_repositories
  */
 final class AddYmlRepoTest extends BrowserTestBase {
-//  use RepositoryContentTypeTrait;
 
   /**
    * {@inheritdoc}
@@ -58,22 +54,6 @@ final class AddYmlRepoTest extends BrowserTestBase {
 
     // Create a regular user.
     $this->authenticatedUser = $this->drupalCreateUser(['access content']);
-
-//    $this->createRepositoryContentType();
-//
-//    // Create Repository URL field on the user entity.
-//    FieldStorageConfig::create([
-//      'field_name' => 'field_repository_url',
-//      'type' => 'link',
-//      'entity_type' => 'user',
-//      'cardinality' => -1,
-//    ])->save();
-//    FieldConfig::create([
-//      'field_name' => 'field_repository_url',
-//      'entity_type' => 'user',
-//      'bundle' => 'user',
-//      'label' => 'Repository URL',
-//    ])->save();
 
     // Add the Repository URL field to the default user form mode.
     /** @var \Drupal\Core\Entity\EntityDisplayRepository $entity_display_repository */
@@ -150,6 +130,41 @@ final class AddYmlRepoTest extends BrowserTestBase {
     $this->drupalLogin($this->authenticatedUser);
     $this->drupalGet('user/' . $this->authenticatedUser->id() . '/edit');
     $session->statusCodeEquals(200);
+
+    // Get the full path to the test .yml file.
+    /** @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler */
+    $module_handler = \Drupal::service('module_handler');
+    $module = $module_handler->getModule('drupaleasy_repositories');
+    $module_full_path = \Drupal::request()->getUri() . $module->getPath();
+
+    // Add our test .yml file to the edit array.
+    $edit = [
+      'field_repository_url[0][uri]' => $module_full_path . '/tests/assets/batman-repo.yml',
+    ];
+    $this->submitForm($edit, 'Save');
+    $session->statusCodeEquals(200);
+    $session->responseContains('The changes have been saved.');
+    // We can't check for the following message unless we also have the future
+    // drupaleasy_notify module enabled.
+    // phpcs:ignore
+    // $session->responseContains('The repo named <em class="placeholder">The Batman repository</em> has been created');
+
+    // Find the repository node created.
+    $query = \Drupal::entityQuery('node');
+    $query->condition('type', 'repository');
+    $results = $query->accessCheck(FALSE)->execute();
+    $session->assert(count($results) === 1, 'Either 0 or more than 1 repository nodes were found.');
+
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $node_storage = $entity_type_manager->getStorage('node');
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $node_storage->load(reset($results));
+
+    $session->assert($node->field_machine_name->value === 'batman-repo', 'Machine name does not match.');
+    $session->assert($node->field_source->value === 'yml_remote', 'Source does not match.');
+    $session->assert($node->getTitle() === 'The Batman Repository', 'Title does not match.');
+    $session->assert($node->field_description->value === 'This is where Batman keeps all of his crime-fighting code.', 'Description does not match.');
+    $session->assert((int) $node->field_number_of_issues->value === 6, 'Number of open issues does not match.');
   }
 
 }
