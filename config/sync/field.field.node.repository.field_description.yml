@@ -7,6 +7,8 @@ dependencies:
     - node.type.repository
   module:
     - text
+_core:
+  default_config_hash: sK9BidZTIkcxOK16uRDjbJFF6Xx7vlzjLY_QLUb9qno
 id: node.repository.field_description
 field_name: field_description
 entity_type: node

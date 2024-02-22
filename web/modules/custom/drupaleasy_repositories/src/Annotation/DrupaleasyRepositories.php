@@ -16,20 +16,20 @@ final class DrupaleasyRepositories extends Plugin {
   /**
    * The plugin ID.
    */
-  public readonly string $id;
+  public string $id;
 
   /**
    * The human-readable name of the plugin.
    *
    * @ingroup plugin_translatable
    */
-  public readonly string $title;
+  public string $label;
 
   /**
    * The description of the plugin.
    *
    * @ingroup plugin_translatable
    */
-  public readonly string $description;
+  public string $description;
 
 }

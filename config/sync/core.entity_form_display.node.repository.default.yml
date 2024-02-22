@@ -12,6 +12,8 @@ dependencies:
     - node.type.repository
   module:
     - path
+_core:
+  default_config_hash: R6xIviIX16FPLrbYRn5-1J60Sbh7O8-Bgn6fwB0wVUU
 id: node.repository.default
 targetEntityType: node
 bundle: repository

@@ -5,6 +5,8 @@ dependencies:
   config:
     - field.storage.node.field_source
     - node.type.repository
+_core:
+  default_config_hash: dTy9BYWOtD9qPpDsQC7MNSb1GE9vHzFQojKTfuHTSUA
 id: node.repository.field_source
 field_name: field_source
 entity_type: node
