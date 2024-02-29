@@ -1,0 +1,3 @@
+repositories_plugins:
+  yml_remote: yml_remote
+  github: '0'
