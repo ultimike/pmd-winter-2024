@@ -7,6 +7,7 @@
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -14,6 +15,52 @@ use Drupal\Core\Render\Element;
 function drupaleasy_repositories_form_user_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
   foreach (Element::children($form['field_repository_url']['widget']) as $el_index) {
     $form['field_repository_url']['widget'][$el_index]['#process'][] = '_drupaleasy_repositories_url_help_text';
+  }
+  $form['#validate'][] = '_drupaleasy_repositories_user_form_validate';
+  $form['actions']['submit']['#submit'][] = '_drupaleasy_repositories_user_form_submit';
+}
+
+/**
+ * Custom form submission handler for user profile forms.
+ *
+ * @param array<mixed> $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function _drupaleasy_repositories_user_form_submit(array $form, FormStateInterface $form_state): void {
+  /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService $repository_service */
+  $repository_service = \Drupal::service('drupaleasy_repositories.service');
+
+  $uid = $form_state->getValue('uid');
+  $account = User::load($uid);
+  if (!is_null($account)) {
+    //$repository_service->updateRepositories($account);
+  }
+}
+
+/**
+ * Custom form validation handler for user profile forms.
+ *
+ * @param array $form
+ *   The form array.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state.
+ */
+function _drupaleasy_repositories_user_form_validate(array &$form, FormStateInterface $form_state): void {
+  /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService $repository_service */
+  $repository_service = \Drupal::service('drupaleasy_repositories.service');
+
+  $username = $form_state->getValue('name');
+  $user = User::load($username);
+  $uid = is_object($user) ? $user->id() : 0;
+
+  // Pass the Repository URLs values to a custom method in the Drupaleasy
+  // Repositories service to validate the URLs.
+  $error = $repository_service->validateRepositoryUrls($form_state->getValue('field_repository_url'), $uid);
+
+  if ($error) {
+    $form_state->setErrorByName('field_repository_url', $error);
   }
 }
 
