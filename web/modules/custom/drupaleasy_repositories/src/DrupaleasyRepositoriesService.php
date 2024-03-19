@@ -168,8 +168,7 @@ final class DrupaleasyRepositoriesService {
     foreach ($repository_plugin_ids as $repository_plugin_id) {
       if (!empty($repository_plugin_id)) {
 
-        /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesInterface $repository_location */
-        // @TODO: fix above var name.
+        /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesInterface $repository_plugin */
         $repository_plugin = $this->pluginManagerDrupaleasyRepositories->createInstance($repository_plugin_id);
         // Loop through repository URLs.
 
@@ -215,12 +214,11 @@ final class DrupaleasyRepositoriesService {
 
       // Look for repository nodes from this user with matching
       // machine_name.
-      $query = $node_storage->getQuery();
+      $query = $node_storage->getQuery()->accessCheck(FALSE);
       $query->condition('type', 'repository')
         ->condition('uid', $account->id())
         ->condition('field_machine_name', $key)
-        ->condition('field_source', $repo_info['source'])
-        ->accessCheck(FALSE);
+        ->condition('field_source', $repo_info['source']);
       $results = $query->execute();
 
       if ($results) {
@@ -246,16 +244,15 @@ final class DrupaleasyRepositoriesService {
       else {
         // Repository node doesn't exist - create a new one.
         /** @var \Drupal\node\NodeInterface $node */
-        // @TODO: Replace $info w $repo_info ...  ?
         $node = $node_storage->create([
           'uid' => $account->id(),
           'type' => 'repository',
-          'title' => $info['label'],
-          'field_description' => $info['description'],
+          'title' => $repo_info['label'],
+          'field_description' => $repo_info['description'],
           'field_machine_name' => $key,
-          'field_number_of_issues' => $info['num_open_issues'],
-          'field_source' => $info['source'],
-          'field_url' => $info['url'],
+          'field_number_of_issues' => $repo_info['num_open_issues'],
+          'field_source' => $repo_info['source'],
+          'field_url' => $repo_info['url'],
           'field_hash' => $hash,
         ]);
         if (!$this->dryRun) {
