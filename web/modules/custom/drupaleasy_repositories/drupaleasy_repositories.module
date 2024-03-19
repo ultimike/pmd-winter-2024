@@ -35,7 +35,7 @@ function _drupaleasy_repositories_user_form_submit(array $form, FormStateInterfa
   $uid = $form_state->getValue('uid');
   $account = User::load($uid);
   if (!is_null($account)) {
-    //$repository_service->updateRepositories($account);
+    $repository_service->updateRepositories($account);
   }
 }
 

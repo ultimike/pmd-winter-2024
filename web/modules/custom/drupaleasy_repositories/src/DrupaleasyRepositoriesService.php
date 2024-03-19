@@ -46,7 +46,6 @@ final class DrupaleasyRepositoriesService {
    */
   protected bool $dryRun = FALSE;
 
-
   /**
    * Constructs a DrupaleasyRepositories service object.
    *
@@ -55,12 +54,15 @@ final class DrupaleasyRepositoriesService {
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The Drupal core configuration factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *    The entity_type.manager service.
- */
-  public function __construct(PluginManagerInterface $plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
+   *   The entity_type.manager service.
+   *  @param bool $dry_run
+   *    The dry_run parameter that specifies whether to save node changes.
+   */
+  public function __construct(PluginManagerInterface $plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, bool $dry_run = FALSE) {
     $this->pluginManagerDrupaleasyRepositories = $plugin_manager;
     $this->configFactory = $config_factory;
     $this->entityTypeManager = $entity_type_manager;
+    $this->dryRun = $dry_run;
   }
 
   /**
@@ -136,7 +138,11 @@ final class DrupaleasyRepositoriesService {
           foreach ($repository_plugins as $repository_plugin) {
             if ($repository_plugin->validate($uri)) {
               $is_valid_url = TRUE;
-              break;
+              $repo_metadata = $repository_plugin->getRepo($uri);
+              if ($repo_metadata) {
+                break;
+              }
+              $errors[] = $this->t('The repository at the url %uri was not found.', ['%uri' => $uri]);
             }
           }
           if (!$is_valid_url) {
@@ -171,7 +177,6 @@ final class DrupaleasyRepositoriesService {
         /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesInterface $repository_plugin */
         $repository_plugin = $this->pluginManagerDrupaleasyRepositories->createInstance($repository_plugin_id);
         // Loop through repository URLs.
-
         foreach ($account->field_repository_url ?? [] as $url) {
           // Check if the URL validates for this repository.
           if ($repository_plugin->validate($url->uri)) {
@@ -184,7 +189,8 @@ final class DrupaleasyRepositoriesService {
         }
       }
     }
-    return $this->updateRepositoryNodes($repos_metadata, $account);
+    return $this->updateRepositoryNodes($repos_metadata, $account) ||
+      $this->deleteRepositoryNodes($repos_metadata, $account);
 
   }
 
@@ -198,6 +204,7 @@ final class DrupaleasyRepositoriesService {
    *
    * @return bool
    *   TRUE if successful.
+   *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function updateRepositoryNodes(array $repos_info, EntityInterface $account): bool {
@@ -237,7 +244,7 @@ final class DrupaleasyRepositoriesService {
 
           if (!$this->dryRun) {
             $node->save();
-            //$this->repoUpdated($node, 'updated');
+            // $this->repoUpdated($node, 'updated');
           }
         }
       }
@@ -257,12 +264,51 @@ final class DrupaleasyRepositoriesService {
         ]);
         if (!$this->dryRun) {
           $node->save();
-          //$this->repoUpdated($node, 'created');
+          // $this->repoUpdated($node, 'created');
         }
       }
     }
     return TRUE;
 
+  }
+
+  /**
+   * Delete repository nodes deleted from the source for a given user.
+   *
+   * @param array<string, array<string, string>> $repos_info
+   *   Repository info from API call.
+   * @param \Drupal\Core\Entity\EntityInterface $account
+   *   The user account whose repositories to update.
+   *
+   * @return bool
+   *   TRUE if successful.
+   */
+  protected function deleteRepositoryNodes(array $repos_info, EntityInterface $account): bool {
+    // Prepare the storage and query stuff.
+    /** @var \Drupal\Core\Entity\EntityStorageInterface $node_storage */
+    $node_storage = $this->entityTypeManager->getStorage('node');
+
+    /** @var \Drupal\Core\Entity\Query\QueryInterface $query */
+    $query = $node_storage->getQuery();
+    $query->condition('type', 'repository')
+      ->condition('uid', $account->id())
+      ->accessCheck(FALSE);
+    // We can't chain this above because $repos_info might be empty.
+    if ($repos_info) {
+      $query->condition('field_machine_name', array_keys($repos_info), 'NOT IN');
     }
+    $results = $query->execute();
+    if ($results) {
+      $nodes = $node_storage->loadMultiple($results);
+      /** @var \Drupal\node\Entity\Node $node */
+      foreach ($nodes as $node) {
+        if (!$this->dryRun) {
+          $node->delete();
+          // $this->repoUpdated($node, 'deleted');
+        }
+      }
+    }
+    return TRUE;
+  }
 
 }

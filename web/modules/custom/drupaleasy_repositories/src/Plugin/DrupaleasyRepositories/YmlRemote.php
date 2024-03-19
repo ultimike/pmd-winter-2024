@@ -37,13 +37,34 @@ final class YmlRemote extends DrupaleasyRepositoriesPluginBase {
    * {@inheritdoc}
    */
   public function getRepo(string $uri): array {
-    if ($file_contents = file_get_contents($uri)) {
-      // Convert file contents from Yaml to a PHP array.
-      $repo_info = Yaml::decode($file_contents);
-      $machine_name = array_key_first($repo_info);
-      $repo = reset($repo_info);
-      return $this->mapToCommonFormat($machine_name, $repo['label'], $repo['description'], $repo['num_open_issues'], $uri);
+    // Temporarily set the PHP error handler to this custom one. If there are
+    // any E_WARNINGs, then TRUE to disable default PHP error handler.
+    // This is basically telling PHP that we are going handle errors of type
+    // E_WARNING until we say otherwise.
+    set_error_handler(function () {
+      // If FALSE is returned, then the default PHP error handler is run as
+      // well.
+      return TRUE;
+    },
+      E_WARNING
+    );
+
+    // The file_exists PHP function doesn't work with files over http.
+    // If $uri doesn't exist, file() will throw a PHP E_WARNING.
+    if (file($uri)) {
+      // Restore the default PHP error handler.
+      restore_error_handler();
+      if ($file_content = file_get_contents($uri)) {
+        $repo_info = Yaml::decode($file_content);
+        $machine_name = array_key_first($repo_info);
+        $repo = reset($repo_info);
+        return $this->mapToCommonFormat($machine_name, $repo['label'], $repo['description'], $repo['num_open_issues'], $uri);
+      }
+      restore_error_handler();
+      return [];
     }
+    // Restore the default PHP error handler.
+    restore_error_handler();
     return [];
   }
 
