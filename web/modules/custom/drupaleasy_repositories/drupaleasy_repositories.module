@@ -50,9 +50,9 @@ function _drupaleasy_repositories_user_form_submit(array $form, FormStateInterfa
 function _drupaleasy_repositories_user_form_validate(array &$form, FormStateInterface $form_state): void {
   /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService $repository_service */
   $repository_service = \Drupal::service('drupaleasy_repositories.service');
-
+  // For some reason, $form_state->getValue('uid') isn't a thing.
   $username = $form_state->getValue('name');
-  $user = User::load($username);
+  $user = user_load_by_name($username);
   $uid = is_object($user) ? $user->id() : 0;
 
   // Pass the Repository URLs values to a custom method in the Drupaleasy

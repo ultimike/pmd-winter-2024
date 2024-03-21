@@ -55,8 +55,8 @@ final class DrupaleasyRepositoriesService {
    *   The Drupal core configuration factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity_type.manager service.
-   *  @param bool $dry_run
-   *    The dry_run parameter that specifies whether to save node changes.
+   * @param bool $dry_run
+   *   The dry_run parameter that specifies whether to save node changes.
    */
   public function __construct(PluginManagerInterface $plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, bool $dry_run = FALSE) {
     $this->pluginManagerDrupaleasyRepositories = $plugin_manager;
@@ -140,9 +140,13 @@ final class DrupaleasyRepositoriesService {
               $is_valid_url = TRUE;
               $repo_metadata = $repository_plugin->getRepo($uri);
               if ($repo_metadata) {
-                break;
+                if (!$this->isUnique($repo_metadata, $uid)) {
+                  $errors[] = $this->t('The repository at %uri has been added by another user.', ['%uri' => $uri]);
+                }
               }
-              $errors[] = $this->t('The repository at the url %uri was not found.', ['%uri' => $uri]);
+              else {
+                $errors[] = $this->t('The repository at the url %uri was not found.', ['%uri' => $uri]);
+              }
             }
           }
           if (!$is_valid_url) {
@@ -309,6 +313,33 @@ final class DrupaleasyRepositoriesService {
       }
     }
     return TRUE;
+  }
+
+  /**
+   * Check to see if the repository is unique.
+   *
+   * @param array<string, array<string, string|int>> $repo_info
+   *   The repository info.
+   * @param int $uid
+   *   The user ID of the submitter.
+   *
+   * @return bool
+   *   Return true if the repository is unique.
+   */
+  protected function isUnique(array $repo_info, int $uid): bool {
+    $node_storage = $this->entityTypeManager->getStorage('node');
+
+    $repo_metadata = array_pop($repo_info);
+
+    // Look for repository nodes with a matching url.
+    $query = $node_storage->getQuery();
+    $results = $query->condition('type', 'repository')
+      ->condition('field_url', $repo_metadata['url'])
+      ->condition('uid', $uid, '<>')
+      ->accessCheck(FALSE)
+      ->execute();
+
+    return !count($results);
   }
 
 }
