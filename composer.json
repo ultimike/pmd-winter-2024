@@ -12,6 +12,10 @@
         {
             "type": "composer",
             "url": "https://packages.drupal.org/8"
+        },
+        {
+            "type": "path",
+            "url": "./modules/*"
         }
     ],
     "require": {
@@ -21,6 +25,7 @@
         "drupal/core-composer-scaffold": "^10.2",
         "drupal/core-project-message": "^10.2",
         "drupal/core-recommended": "^10.2",
+        "drupaleasy/drupaleasy_repositories": "^1.0",
         "drush/drush": "^12.4"
     },
     "conflict": {
