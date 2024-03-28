@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\drupaleasy_repositories\Unit;
 
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\drupaleasy_repositories\Plugin\DrupaleasyRepositories\YmlRemote;
+use Drupal\key\KeyRepositoryInterface;
 use Drupal\Tests\UnitTestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Test description.
@@ -26,7 +29,11 @@ final class YmlRemoteTest extends UnitTestCase {
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->ymlRemote = new YmlRemote([], 'yml_remote', []);
+    $messenger = $this->createMock(MessengerInterface::class);
+    $logger = $this->createMock(LoggerInterface::class);
+    $key_repository = $this->createMock(KeyRepositoryInterface::class);
+
+    $this->ymlRemote = new YmlRemote([], 'yml_remote', [], $messenger, $logger, $key_repository);
   }
 
   /**

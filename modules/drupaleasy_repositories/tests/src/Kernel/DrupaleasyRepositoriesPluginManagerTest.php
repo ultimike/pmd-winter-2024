@@ -19,7 +19,10 @@ final class DrupaleasyRepositoriesPluginManagerTest extends KernelTestBase {
    *
    * @var array<int, string>
    */
-  protected static $modules = ['drupaleasy_repositories'];
+  protected static $modules = [
+    'drupaleasy_repositories',
+    'key',
+  ];
 
   /**
    * Our plugin manager.
@@ -37,7 +40,7 @@ final class DrupaleasyRepositoriesPluginManagerTest extends KernelTestBase {
   }
 
   /**
-   * Test creating an instance of the .yml remtoe plugin.
+   * Test creating an instance of the .yml remote plugin.
    *
    * @covers DrupaleasyRepositoriesPluginManager::class
    * @test
@@ -51,6 +54,23 @@ final class DrupaleasyRepositoriesPluginManagerTest extends KernelTestBase {
     $this->assertInstanceOf('Drupal\drupaleasy_repositories\Plugin\DrupaleasyRepositories\YmlRemote', $example_instance, 'Plugin is not the proper type.');
     $this->assertArrayHasKey('label', $plugin_def, 'Label array key not found.');
     $this->assertTrue($plugin_def['label'] == 'Yml remote', 'The label value is not correct.');
+  }
+
+  /**
+   * Test creating an instance of the Github plugin.
+   *
+   * @covers DrupaleasyRepositoriesPluginManager::class
+   * @test
+   */
+  public function testGithubInstance(): void {
+    /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesPluginBase $example_instance */
+    $example_instance = $this->manager->createInstance('github');
+    $plugin_def = $example_instance->getPluginDefinition();
+
+    $this->assertInstanceOf('Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesPluginBase', $example_instance, 'Plugin parent class is not the proper type.');
+    $this->assertInstanceOf('Drupal\drupaleasy_repositories\Plugin\DrupaleasyRepositories\Github', $example_instance, 'Plugin is not the proper type.');
+    $this->assertArrayHasKey('label', $plugin_def, 'Label array key not found.');
+    $this->assertTrue($plugin_def['label'] == 'GitHub', 'The label value is not correct.');
   }
 
 }

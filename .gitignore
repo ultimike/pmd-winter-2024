@@ -6,3 +6,4 @@ web/profiles/contrib
 web/core
 *.sql.gz
 tmp/
+keys/
