@@ -8,6 +8,7 @@
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -86,4 +87,42 @@ function _drupaleasy_repositories_url_help_text(array $element, FormStateInterfa
   }
   $element['uri']['#description_display'] = 'before';
   return $element;
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function drupaleasy_repositories_user_login(UserInterface $account): void {
+  /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService $drupaleasy_repositories_service */
+  $drupaleasy_repositories_service = \Drupal::service('drupaleasy_repositories.service');
+
+  /**  @var \Drupal\Core\Messenger\Messenger $messenger_service */
+  $messenger_service = \Drupal::service('messenger');
+
+  if ($drupaleasy_repositories_service->updateRepositories($account)) {
+    $messenger_service->addStatus(t('Your repository nodes have been updated.'));
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function drupaleasy_repositories_cron(): void {
+  // Update repository nodes once per day, between 1-2am GMT.
+  // This logic assumes cron runs every hour.
+  $hour = (int) (time() / 3600) % 24;
+  if ($hour === 1) {
+    // Get a list of all users.
+    $query = \Drupal::entityQuery('user');
+    $query->condition('status', 1);
+    // Add condition to only include users with data in field_repository_url.
+    $query->condition('field_repository_url', 0, 'IS NOT NULL');
+    $users = $query->accessCheck(FALSE)->execute();
+
+    // Create a queue item for each user.
+    $queue = \Drupal::queue('drupaleasy_repositories_repository_node_updater');
+    foreach ($users as $uid => $user) {
+      $queue->createItem(['uid' => $uid]);
+    }
+  }
 }
