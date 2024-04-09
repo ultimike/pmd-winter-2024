@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fe05bc720bde11c38278b9c19e5514ee",
+    "content-hash": "78403d6f0eb503df377568217e4cc26f",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1823,15 +1823,33 @@
             }
         },
         {
+            "name": "drupaleasy/drupaleasy_notify",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "./modules/drupaleasy_notify",
+                "reference": "c91f989f1a99d4c39aacf3fc83b7639164752425"
+            },
+            "require": {
+                "drupaleasy/drupaleasy_repositories": "^1.0",
+                "php": ">=8.1.0"
+            },
+            "type": "drupal-custom-module",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "drupaleasy/drupaleasy_repositories",
             "version": "1.0.0",
             "dist": {
                 "type": "path",
                 "url": "./modules/drupaleasy_repositories",
-                "reference": "da10ac51b87d48d56d6f65f48f8e49d4d9069f9f"
+                "reference": "5f1b09d2914f3749185584a9642bae7b18a58c5f"
             },
             "require": {
                 "drupal/key": "^1.17",
+                "drupal/queue_ui": "^3.1",
                 "guzzlehttp/guzzle": "^7.0.1",
                 "http-interop/http-factory-guzzle": "^1.0",
                 "knplabs/github-api": "^3.0",

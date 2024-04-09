@@ -26,7 +26,7 @@ final class UpdateRepositoriesForm extends FormBase {
    *   The DrupalEasy repositories batch service class.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Drupal core's entity type manager service class.
-   * @param QueueUIBatchInterface $queueUIBatch
+   * @param \Drupal\queue_ui\QueueUIBatchInterface $queueUIBatch
    *   The Queue UI batch service class.
    */
   public function __construct(
@@ -94,8 +94,7 @@ final class UpdateRepositoriesForm extends FormBase {
     }
     else {
       // Update all repository nodes for all users via Batch API.
-      //$this->drupaleasyRepositoriesBatch->updateAllRepositories();
-
+      // $this->drupaleasyRepositoriesBatch->updateAllRepositories();
       // Update all repository nodes for all users via Queue API and Queue UI.
       $this->drupaleasyRepositoriesService->createQueueItems();
       // Call Queue UI (Queue Manager) to process of queue items.

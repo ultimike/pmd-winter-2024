@@ -7,6 +7,7 @@
     "knplabs/github-api": "^3.0",
     "guzzlehttp/guzzle": "^7.0.1",
     "http-interop/http-factory-guzzle": "^1.0",
-    "drupal/key": "^1.17"
+    "drupal/key": "^1.17",
+    "drupal/queue_ui": "^3.1"
   }
 }

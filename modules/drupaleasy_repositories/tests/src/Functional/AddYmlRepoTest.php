@@ -24,6 +24,7 @@ final class AddYmlRepoTest extends BrowserTestBase {
    */
   protected static $modules = [
     'drupaleasy_repositories',
+    'drupaleasy_notify',
   ];
 
   /**
@@ -146,8 +147,7 @@ final class AddYmlRepoTest extends BrowserTestBase {
     $session->responseContains('The changes have been saved.');
     // We can't check for the following message unless we also have the future
     // drupaleasy_notify module enabled.
-    // phpcs:ignore
-    // $session->responseContains('The repo named <em class="placeholder">The Batman repository</em> has been created');
+    $session->responseContains('The repository named <em class="placeholder">The Batman Repository</em> has been created');
 
     // Find the repository node created.
     $query = \Drupal::entityQuery('node');
