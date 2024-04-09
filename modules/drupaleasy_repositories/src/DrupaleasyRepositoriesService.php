@@ -8,6 +8,7 @@ use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
@@ -17,53 +18,26 @@ final class DrupaleasyRepositoriesService {
   use StringTranslationTrait;
 
   /**
-   * The DrupalEasy Repositories plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected PluginManagerInterface $pluginManagerDrupaleasyRepositories;
-
-  /**
-   * The Drupal configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
-   * The Entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * The dry-run parameter.
-   *
-   * When set to "true", no nodes are created, updated, or deleted.
-   *
-   * @var bool
-   */
-  protected bool $dryRun = FALSE;
-
-  /**
    * Constructs a DrupaleasyRepositories service object.
    *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $plugin_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $pluginManagerDrupaleasyRepositories
    *   The Drupaleasy repositories plugin manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The Drupal core configuration factory.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity_type.manager service.
-   * @param bool $dry_run
+   * @param \Drupal\Core\Queue\QueueFactory $queue
+   *   The Drupal core queue factory service.
+   * @param bool $dryRun
    *   The dry_run parameter that specifies whether to save node changes.
    */
-  public function __construct(PluginManagerInterface $plugin_manager, ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, bool $dry_run = FALSE) {
-    $this->pluginManagerDrupaleasyRepositories = $plugin_manager;
-    $this->configFactory = $config_factory;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->dryRun = $dry_run;
-  }
+  public function __construct(
+    protected PluginManagerInterface $pluginManagerDrupaleasyRepositories,
+    protected ConfigFactoryInterface $configFactory,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected QueueFactory $queue,
+    protected bool $dryRun = FALSE
+  ) {}
 
   /**
    * Returns validator help text for enabled plugins of our type.
@@ -339,6 +313,26 @@ final class DrupaleasyRepositoriesService {
       ->execute();
 
     return !count($results);
+  }
+
+  /**
+   * Create queue items for each user.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   */
+  public function createQueueItems(): void {
+    $query = $this->entityTypeManager->getStorage('user')->getQuery();
+    $query->condition('status', 1);
+    // Add condition to only include users with data in field_repository_url.
+    $query->condition('field_repository_url', 0, 'IS NOT NULL');
+    $users = $query->accessCheck(FALSE)->execute();
+
+    // Create a queue item for each user.
+    $queue = $this->queue->get('drupaleasy_repositories_repository_node_updater');
+    foreach ($users as $uid => $user) {
+      $queue->createItem(['uid' => $uid]);
+    }
   }
 
 }

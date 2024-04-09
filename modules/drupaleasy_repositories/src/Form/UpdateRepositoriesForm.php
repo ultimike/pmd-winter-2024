@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\drupaleasy_repositories\DrupaleasyRepositoriesBatch;
 use Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService;
+use Drupal\queue_ui\QueueUIBatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -25,11 +26,14 @@ final class UpdateRepositoriesForm extends FormBase {
    *   The DrupalEasy repositories batch service class.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Drupal core's entity type manager service class.
+   * @param QueueUIBatchInterface $queueUIBatch
+   *   The Queue UI batch service class.
    */
   public function __construct(
     private readonly DrupaleasyRepositoriesService $drupaleasyRepositoriesService,
     private readonly DrupaleasyRepositoriesBatch $drupaleasyRepositoriesBatch,
     private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly QueueUIBatchInterface $queueUIBatch,
   ) {}
 
   /**
@@ -40,6 +44,7 @@ final class UpdateRepositoriesForm extends FormBase {
       $container->get('drupaleasy_repositories.service'),
       $container->get('drupaleasy_repositories.batch'),
       $container->get('entity_type.manager'),
+      $container->get('queue_ui.batch'),
     );
   }
 
@@ -89,7 +94,12 @@ final class UpdateRepositoriesForm extends FormBase {
     }
     else {
       // Update all repository nodes for all users via Batch API.
-      $this->drupaleasyRepositoriesBatch->updateAllRepositories();
+      //$this->drupaleasyRepositoriesBatch->updateAllRepositories();
+
+      // Update all repository nodes for all users via Queue API and Queue UI.
+      $this->drupaleasyRepositoriesService->createQueueItems();
+      // Call Queue UI (Queue Manager) to process of queue items.
+      $this->queueUIBatch->batch(['drupaleasy_repositories_repository_node_updater']);
     }
   }
 
