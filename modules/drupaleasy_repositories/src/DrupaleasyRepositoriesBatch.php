@@ -32,8 +32,11 @@ final class DrupaleasyRepositoriesBatch {
 
   /**
    * Updates all user repository nodes using Batch API.
+   *
+   * @param bool $drush
+   *   Whether to run the batch process via Drush.
    */
-  public function updateAllRepositories(): void {
+  public function updateAllRepositories(bool $drush = FALSE): void {
     $user_storage = $this->entityTypeManager->getStorage('user');
     $query = $user_storage->getQuery();
     $query->condition('status', 1);
@@ -52,6 +55,9 @@ final class DrupaleasyRepositoriesBatch {
     ];
 
     batch_set($batch);
+    if ($drush) {
+      drush_backend_batch_process();
+    }
   }
 
   /**
