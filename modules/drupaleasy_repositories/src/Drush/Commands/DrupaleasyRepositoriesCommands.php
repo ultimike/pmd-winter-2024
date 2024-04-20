@@ -76,8 +76,9 @@ final class DrupaleasyRepositoriesCommands extends DrushCommands {
       // $this->batch->updateAllRepositories(TRUE);
       // Update all repository nodes for all users via Queue API and Queue UI.
       $this->repositoriesService->createQueueItems();
-      // Call Queue UI (Queue Manager) to process of queue items.
+      // Call Queue UI (Queue Manager) to finish setting up all the queue items.
       $this->queueUIBatch->batch(['drupaleasy_repositories_repository_node_updater']);
+      // Tell Drush to process the batch.
       drush_backend_batch_process();
     }
   }
