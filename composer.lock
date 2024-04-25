@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "68af317d8c90a4e8be3971b88d2277c0",
+    "content-hash": "3082da7424466f9203b772f7b3302123",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1333,6 +1333,50 @@
             "support": {
                 "source": "https://git.drupalcode.org/project/admin_toolbar",
                 "issues": "https://www.drupal.org/project/issues/admin_toolbar"
+            }
+        },
+        {
+            "name": "drupal/cache_review",
+            "version": "1.1.0-rc1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/cache_review.git",
+                "reference": "1.1.0-rc1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/cache_review-1.1.0-rc1.zip",
+                "reference": "1.1.0-rc1",
+                "shasum": "5c43075fa95f4c1bc0137b5155b16629d9d208e9"
+            },
+            "require": {
+                "drupal/core": "^9 || ^10 || ^11"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.1.0-rc1",
+                    "datestamp": "1708918567",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "osab",
+                    "homepage": "https://www.drupal.org/user/3355876"
+                }
+            ],
+            "description": "Provides tool to review how internal and dynamic cache work",
+            "homepage": "https://www.drupal.org/project/cache_review",
+            "support": {
+                "source": "https://git.drupalcode.org/project/cache_review"
             }
         },
         {
@@ -12663,7 +12707,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "drupal/cache_review": 5
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": [],

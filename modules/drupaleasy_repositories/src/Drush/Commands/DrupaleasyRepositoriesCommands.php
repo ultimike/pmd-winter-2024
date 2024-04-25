@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\drupaleasy_repositories\Drush\Commands;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\drupaleasy_repositories\DrupaleasyRepositoriesBatch;
 use Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService;
@@ -27,12 +28,15 @@ final class DrupaleasyRepositoriesCommands extends DrushCommands {
    *   The DrupaleasyRepositoriesBatch service.
    * @param \Drupal\queue_ui\QueueUIBatchInterface $queueUIBatch
    *   The Queue UI batch service class.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheInvalidator
+   *   Cache invalidator service.
    */
   public function __construct(
     private readonly DrupaleasyRepositoriesService $repositoriesService,
     private readonly EntityTypeManagerInterface $entityTypeManager,
     private readonly DrupaleasyRepositoriesBatch $batch,
     private readonly QueueUIBatchInterface $queueUIBatch,
+    private readonly CacheTagsInvalidatorInterface $cacheInvalidator,
   ) {
     parent::__construct();
   }
@@ -81,6 +85,8 @@ final class DrupaleasyRepositoriesCommands extends DrushCommands {
       // Tell Drush to process the batch.
       drush_backend_batch_process();
     }
+    // Invalidate the drupaleasy_repositories cache tag.
+    $this->cacheInvalidator->invalidateTags(['drupaleasy_repositories']);
   }
 
 }
