@@ -6,7 +6,6 @@ namespace Drupal\drupaleasy_repositories\Plugin\Block;
 
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Block\BlockBase;
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -79,12 +78,32 @@ final class MyRepositoriesStatsBlock extends BlockBase implements ContainerFacto
       ],
     ];
     $build['#cache'] = [
-      //'max-age' => Cache::PERMANENT,
-      'max-age' => 0,
-      'tags' => ['node_list:repository', 'drupaleasy_repositories'],
-      'contexts' => ['timezone', 'user'],
+      // 'tags' => ['node_list:repository', 'drupaleasy_repositories'],
+      // 'contexts' => ['timezone', 'user'],
     ];
     return $build;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  // public function getCacheMaxAge() {
+  //   // Return Cache::PERMANENT;.
+  //   return 10;
+  // }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getCacheTags() {
+    return ['node_list:repository', 'drupaleasy_repositories'];
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getCacheContexts() {
+    return ['timezone', 'user'];
   }
 
   /**

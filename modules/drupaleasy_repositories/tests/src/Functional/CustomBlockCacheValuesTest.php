@@ -48,19 +48,19 @@ final class CustomBlockCacheValuesTest extends BrowserTestBase {
 
     // Set the cacheability settings of the block to the following for these
     // test to pass:
-    //
-    // $build['#cache'] = [
-    //   'max-age' => 123,
-    //   'tags' => ['node_list:repository', 'drupaleasy_repositories'],
-    //   'contexts' => ['timezone'],
-    // ];.
+    // public function getCacheTags() {
+    //  return ['node_list:repository', 'drupaleasy_repositories'];
+    // }
+    // public function getCacheContexts() {
+    //   return ['timezone', 'user'];
+    // }
     // This demonstrates that max-age does not bubble up to Cache-control
     // (external caching).
     $this->assertSession()->responseHeaderContains('Cache-Control', 'must-revalidate, no-cache, private');
 
     // This demonstrates that the max age does bubble up to the Internal Dynamic
     // Page Cache module.
-    $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Max-Age', '123');
+    $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Max-Age', '-1');
 
     // These demonstrate that the cache tags were added and did bubble up.
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'drupaleasy_repositories');

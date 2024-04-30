@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\drupaleasy_repositories;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -33,6 +36,10 @@ final class DrupaleasyRepositoriesService {
    *   The Drupal core queue factory service.
    * @param \Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher $eventDispatcher
    *   The Drupal core event dispatcher service.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   *   The Drupal core cache.data service.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The Drupal core datetime service.
    * @param bool $dryRun
    *   The dry_run parameter that specifies whether to save node changes.
    */
@@ -42,6 +49,8 @@ final class DrupaleasyRepositoriesService {
     protected EntityTypeManagerInterface $entityTypeManager,
     protected QueueFactory $queue,
     protected ContainerAwareEventDispatcher $eventDispatcher,
+    protected CacheBackendInterface $cache,
+    protected TimeInterface $time,
     protected bool $dryRun = FALSE
   ) {}
 
@@ -153,26 +162,41 @@ final class DrupaleasyRepositoriesService {
    */
   public function updateRepositories(EntityInterface $account): bool {
     $repos_metadata = [];
-    $repository_plugin_ids = $this->configFactory->get('drupaleasy_repositories.settings')->get('repositories_plugins') ?? [];
 
-    foreach ($repository_plugin_ids as $repository_plugin_id) {
-      if (!empty($repository_plugin_id)) {
+    $cid = 'drupaleasy_repositories:repositories:' . (string) $account->id();
+    // Check to see if there is cached data for this user available.
+    // The $cache object is just a standard default PHP object with properties
+    // for each of the fields in its "cache_<bin-name>" table. No type hint is
+    // available for IDE autocomplete.
+    $cache = $this->cache->get($cid);
+    if ($cache) {
+      $repos_metadata = $cache->data;
+    }
+    else {
+      $repository_plugin_ids = $this->configFactory->get('drupaleasy_repositories.settings')->get('repositories_plugins') ?? [];
 
-        /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesInterface $repository_plugin */
-        $repository_plugin = $this->pluginManagerDrupaleasyRepositories->createInstance($repository_plugin_id);
-        // Loop through repository URLs.
-        foreach ($account->field_repository_url ?? [] as $url) {
-          // Check if the URL validates for this repository.
-          if ($repository_plugin->validate($url->uri)) {
+      foreach ($repository_plugin_ids as $repository_plugin_id) {
+        if (!empty($repository_plugin_id)) {
 
-            // Confirm the repository exists and get metadata.
-            if ($repo_metadata = $repository_plugin->getRepo($url->uri)) {
-              $repos_metadata += $repo_metadata;
+          /** @var \Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesInterface $repository_plugin */
+          $repository_plugin = $this->pluginManagerDrupaleasyRepositories->createInstance($repository_plugin_id);
+          // Loop through repository URLs.
+          foreach ($account->field_repository_url ?? [] as $url) {
+            // Check if the URL validates for this repository.
+            if ($repository_plugin->validate($url->uri)) {
+
+              // Confirm the repository exists and get metadata.
+              if ($repo_metadata = $repository_plugin->getRepo($url->uri)) {
+                $repos_metadata += $repo_metadata;
+              }
             }
           }
         }
       }
+      // Set cached data for this user.
+      $this->cache->set($cid, $repos_metadata, Cache::PERMANENT, ['user:' . $account->id()]);
     }
+
     $repos_updated = $this->updateRepositoryNodes($repos_metadata, $account);
     $repos_deleted = $this->deleteRepositoryNodes($repos_metadata, $account);
     return $repos_updated || $repos_deleted;
