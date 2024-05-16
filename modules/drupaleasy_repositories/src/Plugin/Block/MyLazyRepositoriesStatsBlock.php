@@ -8,19 +8,20 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Security\TrustedCallbackInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Provides a my repositories stats block.
+ * Provides a my lazy repositories stats block.
  *
  * @Block(
- *   id = "drupaleasy_repositories_my_repositories_stats",
- *   admin_label = @Translation("My repositories stats"),
+ *   id = "drupaleasy_repositories_my_lazy_repositories_stats",
+ *   admin_label = @Translation("My lazy repositories stats"),
  *   category = @Translation("DrupalEasy"),
  * )
  */
-final class MyRepositoriesStatsBlock extends BlockBase implements ContainerFactoryPluginInterface {
+final class MyLazyRepositoriesStatsBlock extends BlockBase implements ContainerFactoryPluginInterface, TrustedCallbackInterface {
 
   /**
    * Constructs the plugin instance.
@@ -68,37 +69,41 @@ final class MyRepositoriesStatsBlock extends BlockBase implements ContainerFacto
    */
   public function build(): array {
     $build['content'] = [
-      '#theme' => 'item_list',
-      '#list_type' => 'ul',
-      '#items' => [
-        $this->t('Current user: @name', ['@name' => $this->currentUser->getDisplayName()]),
-        $this->t('Current timestamp: @timestamp', ['@timestamp' => $this->datetimeTime->getCurrentTime()]),
-        $this->t('Total number of issues in all repository nodes: @all', ['@all' => $this->calculateTotalIssues()]),
-        $this->t('Total number of issues in my repository nodes: @my', ['@my' => $this->calculateTotalIssues((int) $this->currentUser->id())]),
+      '#lazy_builder' => [
+        static::class . '::lazyBuilder',
+        [],
       ],
     ];
-    $build['#cache'] = [
-      // 'max-age' => 10,
-      // 'tags' => ['node_list:repository', 'drupaleasy_repositories'],
-      'contexts' => ['timezone', 'user'],
-    ];
     return $build;
+  }
+
+
+  /**
+   * Returns array of trusted callback methods.
+   *
+   * @return string[]
+   *   Array of trusted callback methods.
+   */
+  public static function trustedCallbacks() {
+    return [
+      'lazyBuilder',
+    ];
   }
 
   /**
    * {@inheritDoc}
    */
-  // public function getCacheMaxAge() {
+  // Public function getCacheMaxAge() {
   //   // Return Cache::PERMANENT;.
   //   return 10;
-  // }
+  // }.
 
   /**
    * {@inheritDoc}
    */
-  // public function getCacheTags() {
+  // Public function getCacheTags() {
   //   return ['node_list:repository', 'drupaleasy_repositories'];
-  // }
+  // }.
 
   /**
    * {@inheritDoc}
